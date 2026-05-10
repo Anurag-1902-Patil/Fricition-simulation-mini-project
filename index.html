@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friction Based Practical Applications</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===== ROOT & RESET ===== */
+        :root {
+            --bg-page: #f0f2f7;
+            --bg-surface: #ffffff;
+            --bg-panel: #f7f8fc;
+            --bg-card: #ffffff;
+            --accent-blue: #1d5fa8;
+            --accent-teal: #0d7490;
+            --accent-orange: #c2530a;
+            --accent-green: #187a46;
+            --accent-red: #b91c1c;
+            --accent-amber: #92580a;
+            --accent-purple: #5b3fa6;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-soft: #dde2ed;
+            --border-med: #c0c9dd;
+            --border-active: #1d5fa8;
+            --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* ===== PARTICLE CANVAS ===== */
+        #particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* ===== INTRO SCREEN ===== */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #f0f2f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #intro-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .intro-scanline {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(29, 95, 168, 0.025) 3px, rgba(29, 95, 168, 0.025) 6px);
+        }
+
+        @keyframes scanMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100px;
+            }
+        }
+
+        .intro-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            text-align: center;
+            color: var(--accent-blue);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            animation: subtlePulse 2.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes subtlePulse {
+            from {
+                opacity: 0.85;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .intro-subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            font-weight: 400;
+            color: var(--text-secondary);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+
+        .intro-bar {
+            width: 320px;
+            height: 3px;
+            background: var(--border-soft);
+            border-radius: 3px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .intro-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+            width: 0%;
+            transition: width 0.05s linear;
+            border-radius: 3px;
+        }
+
+        .intro-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-teal);
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+            min-height: 1.2em;
+        }
+
+        .intro-enter-btn {
+            padding: 13px 48px;
+            border: 2px solid var(--accent-blue);
+            background: var(--accent-blue);
+            color: #ffffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .intro-enter-btn:hover {
+            background: #174d8c;
+            border-color: #174d8c;
+            box-shadow: var(--shadow-md);
+        }
+
+        .intro-enter-btn.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .intro-team {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.12em;
+            text-align: center;
+        }
+
+        .intro-team span {
+            color: var(--text-secondary);
+        }
+
+        /* ===== MAIN APP ===== */
+        #main-app {
+            position: relative;
+            z-index: 1;
+            display: none;
+        }
+
+        #main-app.visible {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            padding: 0.9rem 2rem;
+            border-bottom: 1px solid var(--border-soft);
+            background: var(--bg-surface);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            letter-spacing: 0.06em;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            padding: 6px 15px;
+            border: 1px solid var(--border-med);
+            background: var(--bg-panel);
+            color: var(--text-secondary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .header-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: #e8f0fb;
+        }
+
+        .header-btn.active {
+            border-color: var(--accent-blue);
+            color: #ffffff;
+            background: var(--accent-blue);
+        }
+
+        .gravity-select {
+            padding: 6px 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-med);
+            color: var(--accent-teal);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.76rem;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .gravity-select option {
+            background: #ffffff;
+        }
+
+        /* ===== LAYOUT ===== */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 260px;
+            grid-template-rows: auto;
+            min-height: calc(100vh - 60px);
+            gap: 0;
+        }
+
+        /* ===== LEFT PANEL ===== */
+        .left-panel {
+            border-right: 1px solid var(--border-soft);
+            background: var(--bg-surface);
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .sim-nav-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .sim-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 1rem;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .sim-btn:hover {
+            background: #eef2fb;
+            border-color: var(--border-soft);
+            color: var(--text-primary);
+        }
+
+        .sim-btn.active {
+            background: #e3ecf9;
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .sim-icon {
+            font-size: 1.4rem;
+            min-width: 1.6rem;
+            text-align: center;
+        }
+
+        .sim-label {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .sim-label span:last-child {
+            font-size: 0.68rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        .sim-btn.active .sim-label span:last-child {
+            color: #5a88c8;
+        }
+
+        /* ===== CENTER ===== */
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-page);
+        }
+
+        .sim-canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            gap: 1rem;
+        }
+
+        .sim-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sim-title-block h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .sim-title-block p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+        }
+
+        .sim-status-bar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .status-pill.running {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: var(--accent-green);
+        }
+
+        .status-pill.paused {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: var(--accent-amber);
+        }
+
+        .status-pill.stopped {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: var(--accent-red);
+        }
+
+        /* ===== CANVAS CONTAINER ===== */
+        .canvas-container {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sim-canvas {
+            display: block;
+            width: 100%;
+            height: 320px;
+        }
+
+        .canvas-grid-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(29, 95, 168, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(29, 95, 168, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* ===== FORMULA BOX ===== */
+        .formula-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .formula-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .formula-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .formula-value {
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .formula-eq {
+            color: var(--accent-orange);
+            font-size: 0.82rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* ===== GRAPH AREA ===== */
+        .graph-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .graph-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 6px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .graph-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .graph-canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+        }
+
+        /* ===== RIGHT PANEL ===== */
+        .right-panel {
+            border-left: 1px solid var(--border-soft);
+            background: var(--bg-surface);
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .panel-section-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-soft);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        /* ===== SLIDERS ===== */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-label span:first-child {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .control-val {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-teal);
+            background: #e8f6f9;
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 1px solid #b2dde8;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border-soft);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        input[type=range].orange::-webkit-slider-thumb {
+            background: var(--accent-orange);
+        }
+
+        input[type=range].green::-webkit-slider-thumb {
+            background: var(--accent-green);
+        }
+
+        /* ===== MATERIAL SELECTOR ===== */
+        .material-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mat-btn {
+            padding: 8px 6px;
+            border: 1px solid var(--border-soft);
+            background: var(--bg-panel);
+            color: var(--text-secondary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            line-height: 1.2;
+        }
+
+        .mat-btn .mat-icon {
+            font-size: 1.2rem;
+        }
+
+        .mat-btn .mat-mu {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .mat-btn:hover {
+            border-color: var(--accent-teal);
+            color: var(--text-primary);
+            background: #e8f6f9;
+        }
+
+        .mat-btn.active {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+            background: #fdf0e8;
+        }
+
+        .mat-btn.active .mat-mu {
+            color: #d97706;
+        }
+
+        /* ===== METRICS ===== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-soft);
+            border-radius: 6px;
+            padding: 0.7rem 0.6rem;
+            text-align: center;
+        }
+
+        .metric-val {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-teal);
+            display: block;
+            line-height: 1.2;
+        }
+
+        .metric-val.orange {
+            color: var(--accent-orange);
+        }
+
+        .metric-val.green {
+            color: var(--accent-green);
+        }
+
+        .metric-val.red {
+            color: var(--accent-red);
+        }
+
+        .metric-lbl {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 9px;
+            border: 1.5px solid;
+            background: transparent;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .action-btn.start {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .action-btn.start:hover {
+            background: #d1fae5;
+        }
+
+        .action-btn.pause {
+            border-color: var(--accent-amber);
+            color: var(--accent-amber);
+        }
+
+        .action-btn.pause:hover {
+            background: #fef3c7;
+        }
+
+        .action-btn.reset {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .action-btn.reset:hover {
+            background: #fee2e2;
+        }
+
+        /* ===== THEORY PANEL ===== */
+        .theory-box {
+            background: #eef4fd;
+            border: 1px solid #c6d9f4;
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 4px;
+            padding: 0.8rem;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .theory-box strong {
+            color: var(--accent-blue);
+        }
+
+        /* ===== INFO TABS ===== */
+        .info-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-soft);
+            margin-bottom: 0.75rem;
+        }
+
+        .info-tab {
+            padding: 6px 14px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .info-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .info-content {
+            display: none;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .pro-con-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .pro-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+
+        .con-box {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+
+        .pro-box h4 {
+            color: var(--accent-green);
+            font-size: 0.72rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .con-box h4 {
+            color: var(--accent-red);
+            font-size: 0.72rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pro-box li,
+        .con-box li {
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            list-style: none;
+            padding: 1px 0;
+        }
+
+        .pro-box li::before {
+            content: "+ ";
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .con-box li::before {
+            content: "− ";
+            color: var(--accent-red);
+            font-weight: 700;
+        }
+
+        /* ===== PERFORMANCE PANEL ===== */
+        .perf-panel {
+            display: none;
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 200;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-med);
+            border-top: 3px solid var(--accent-purple);
+            border-radius: 6px;
+            padding: 1rem;
+            width: 220px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .perf-panel.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .perf-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.62rem;
+            color: var(--accent-purple);
+            letter-spacing: 0.15em;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .perf-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .perf-row span:first-child {
+            color: var(--text-muted);
+        }
+
+        .perf-row span:last-child {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        /* ===== SLOW-MO BADGE ===== */
+        .slowmo-badge {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: var(--accent-amber);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            padding: 3px 10px;
+            border-radius: 3px;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+            animation: blinkPulse 1.2s infinite;
+        }
+
+        .slowmo-badge.show {
+            display: block;
+        }
+
+        @keyframes blinkPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ===== SPARK CANVAS ===== */
+        .spark-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* ===== FRICTION INDICATOR ===== */
+        .friction-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.68rem;
+            padding: 4px 10px;
+            border-radius: 3px;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .friction-indicator.static {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .friction-indicator.kinetic {
+            background: #fdf0e8;
+            border: 1px solid #fdba74;
+            color: var(--accent-orange);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-panel);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-med);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-teal);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1100px) {
+            .app-layout {
+                grid-template-columns: 240px 1fr 220px;
+            }
+        }
+
+        @media (max-width: 850px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel,
+            .right-panel {
+                border: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+
+            .graph-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PARTICLE BACKGROUND -->
+    <canvas id="particles-bg"></canvas>
+
+    <!-- INTRO SCREEN -->
+    <div id="intro-screen">
+        <div class="intro-scanline"></div>
+        <div class="intro-logo">FRICTION LAB</div>
+        <div class="intro-subtitle">Friction Based Practical Applications</div>
+        <div class="intro-bar">
+            <div class="intro-bar-fill" id="intro-progress"></div>
+        </div>
+        <div class="intro-status" id="intro-status">INITIALIZING PHYSICS ENGINE...</div>
+        <button class="intro-enter-btn" id="intro-enter-btn" onclick="enterApp()">ENTER SIMULATION →</button>
+        <div class="intro-team">
+            <div style="margin-bottom:4px;">PHYSICS SIMULATION LABORATORY</div>
+            <span>Mechanical Engineering · Applied Physics · Interactive Learning</span>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app">
+        <header class="app-header">
+            <div class="header-title">⚡ FRICTION SIM v2.4</div>
+            <div class="header-controls">
+                <select class="gravity-select" id="gravity-select" onchange="updateGravity()">
+                    <option value="9.81">🌍 Earth 9.81 m/s²</option>
+                    <option value="1.62">🌕 Moon 1.62 m/s²</option>
+                    <option value="3.72">🔴 Mars 3.72 m/s²</option>
+                </select>
+                <button class="header-btn" id="slowmo-btn" onclick="toggleSlowmo()">🐢 SLOW-MO</button>
+                <button class="header-btn" id="sound-btn" onclick="toggleSound()">🔊 SOUND</button>
+                <button class="header-btn" id="perf-btn" onclick="togglePerf()">📊 STATS</button>
+            </div>
+        </header>
+
+        <div class="app-layout">
+            <!-- LEFT: SIMULATION NAV -->
+            <div class="left-panel">
+                <div class="sim-nav-title">▸ Simulations</div>
+                <button class="sim-btn active" onclick="loadSim(0)" id="sim-btn-0">
+                    <span class="sim-icon">📦</span>
+                    <span class="sim-label"><span>Sliding Box</span><span>Surface friction analysis</span></span>
+                </button>
+                <button class="sim-btn" onclick="loadSim(1)" id="sim-btn-1">
+                    <span class="sim-icon">🚗</span>
+                    <span class="sim-label"><span>Car Braking</span><span>Braking distance & ABS</span></span>
+                </button>
+                <button class="sim-btn" onclick="loadSim(2)" id="sim-btn-2">
+                    <span class="sim-icon">🚲</span>
+                    <span class="sim-label"><span>Bicycle Tire</span><span>Grip & rolling friction</span></span>
+                </button>
+                <button class="sim-btn" onclick="loadSim(3)" id="sim-btn-3">
+                    <span class="sim-icon">👟</span>
+                    <span class="sim-label"><span>Walking Shoe</span><span>Shoe–ground interaction</span></span>
+                </button>
+                <button class="sim-btn" onclick="loadSim(4)" id="sim-btn-4">
+                    <span class="sim-icon">⚙️</span>
+                    <span class="sim-label"><span>Conveyor Belt</span><span>Driven surface friction</span></span>
+                </button>
+                <button class="sim-btn" onclick="loadSim(5)" id="sim-btn-5">
+                    <span class="sim-icon">📐</span>
+                    <span class="sim-label"><span>Inclined Plane</span><span>Static & kinetic friction</span></span>
+                </button>
+
+                <!-- THEORY -->
+                <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--border-glass);">
+                    <div class="panel-section-title">Theory</div>
+                    <div class="theory-box" id="theory-text">
+                        Friction is a contact force opposing relative motion between surfaces.
+                        <br><br>
+                        <strong>F = μN</strong><br>
+                        F = friction force (N)<br>
+                        μ = coefficient of friction<br>
+                        N = normal force (N)
+                        <br><br>
+                        <strong>Static friction</strong> prevents motion onset.<br>
+                        <strong>Kinetic friction</strong> opposes sliding motion.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: CANVAS + GRAPHS -->
+            <div class="center-panel">
+                <div class="sim-canvas-area">
+                    <div class="sim-header-row">
+                        <div class="sim-title-block">
+                            <h2 id="sim-title">Sliding Box on Surface</h2>
+                            <p id="sim-desc">Analyze static and kinetic friction as applied force varies. Watch the
+                                friction type change as force exceeds the static threshold.</p>
+                        </div>
+                        <div>
+                            <div class="sim-status-bar">
+                                <div class="status-pill stopped" id="sim-status">READY</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MAIN SIMULATION CANVAS -->
+                    <div class="canvas-container">
+                        <div class="canvas-grid-overlay"></div>
+                        <canvas class="sim-canvas" id="main-canvas"></canvas>
+                        <canvas class="spark-canvas" id="spark-canvas"></canvas>
+                        <div class="slowmo-badge" id="slowmo-badge">0.25x SLOW-MO</div>
+                        <div class="friction-indicator static" id="friction-indicator">STATIC FRICTION</div>
+                    </div>
+
+                    <!-- FORMULA BAR -->
+                    <div class="formula-box">
+                        <div class="formula-item">
+                            <div>
+                                <div class="formula-label">FORMULA</div>
+                                <div class="formula-eq" id="formula-eq">F_f = μ × N</div>
+                            </div>
+                        </div>
+                        <div class="formula-item">
+                            <div>
+                                <div class="formula-label">FRICTION FORCE</div>
+                                <div class="formula-value" id="val-ff">0.00 N</div>
+                            </div>
+                        </div>
+                        <div class="formula-item">
+                            <div>
+                                <div class="formula-label">NORMAL FORCE</div>
+                                <div class="formula-value" id="val-n">0.00 N</div>
+                            </div>
+                        </div>
+                        <div class="formula-item">
+                            <div>
+                                <div class="formula-label">NET FORCE</div>
+                                <div class="formula-value" id="val-fnet">0.00 N</div>
+                            </div>
+                        </div>
+                        <div class="formula-item">
+                            <div>
+                                <div class="formula-label">ACCELERATION</div>
+                                <div class="formula-value" id="val-acc">0.00 m/s²</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRAPHS -->
+                    <div class="graph-row">
+                        <div class="graph-card">
+                            <div class="graph-title">▸ Velocity vs Time</div>
+                            <canvas class="graph-canvas" id="graph-vel"></canvas>
+                        </div>
+                        <div class="graph-card">
+                            <div class="graph-title">▸ Force vs Friction</div>
+                            <canvas class="graph-canvas" id="graph-force"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- INFO TABS -->
+                    <div>
+                        <div class="info-tabs">
+                            <div class="info-tab active" onclick="switchTab(0)">Applications</div>
+                            <div class="info-tab" onclick="switchTab(1)">Advantages</div>
+                            <div class="info-tab" onclick="switchTab(2)">Disadvantages</div>
+                            <div class="info-tab" onclick="switchTab(3)">Theory</div>
+                        </div>
+                        <div class="info-content active" id="tab-0">
+                            <div id="app-text">
+                                Friction enables everyday tasks: writing on paper, walking without slipping, vehicle
+                                braking, and climbing. In engineering, friction is harnessed in clutches, brakes,
+                                conveyor belts, and mechanical fasteners.
+                            </div>
+                        </div>
+                        <div class="info-content" id="tab-1">
+                            <div class="pro-con-grid">
+                                <div class="pro-box">
+                                    <h4>✓ ADVANTAGES</h4>
+                                    <ul id="pro-list">
+                                        <li>Enables walking & running</li>
+                                        <li>Allows vehicle braking</li>
+                                        <li>Holds screws & bolts</li>
+                                        <li>Powers clutch mechanisms</li>
+                                        <li>Enables writing/grip</li>
+                                    </ul>
+                                </div>
+                                <div class="con-box">
+                                    <h4>✗ DISADVANTAGES</h4>
+                                    <ul id="con-list">
+                                        <li>Causes energy loss (heat)</li>
+                                        <li>Wears machine parts</li>
+                                        <li>Reduces efficiency</li>
+                                        <li>Increases fuel consumption</li>
+                                        <li>Requires lubrication</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-content" id="tab-2"></div>
+                        <div class="info-content" id="tab-3">
+                            <div id="theory-detail"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: CONTROLS -->
+            <div class="right-panel">
+                <!-- MATERIAL -->
+                <div>
+                    <div class="panel-section-title">Material Preset</div>
+                    <div class="material-grid">
+                        <button class="mat-btn" onclick="setMaterial('ice')" id="mat-ice">
+                            <span class="mat-icon">🧊</span>
+                            <span>Ice</span>
+                            <span class="mat-mu">μ=0.03</span>
+                        </button>
+                        <button class="mat-btn active" onclick="setMaterial('wood')" id="mat-wood">
+                            <span class="mat-icon">🪵</span>
+                            <span>Wood</span>
+                            <span class="mat-mu">μ=0.40</span>
+                        </button>
+                        <button class="mat-btn" onclick="setMaterial('rubber')" id="mat-rubber">
+                            <span class="mat-icon">⚫</span>
+                            <span>Rubber</span>
+                            <span class="mat-mu">μ=0.80</span>
+                        </button>
+                        <button class="mat-btn" onclick="setMaterial('metal')" id="mat-metal">
+                            <span class="mat-icon">⚙️</span>
+                            <span>Metal</span>
+                            <span class="mat-mu">μ=0.15</span>
+                        </button>
+                        <button class="mat-btn" onclick="setMaterial('sand')" id="mat-sand" style="grid-column:span 2;">
+                            <span class="mat-icon">🏖️</span>
+                            <span>Sandpaper</span>
+                            <span class="mat-mu">μ=0.90</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PHYSICS CONTROLS -->
+                <div>
+                    <div class="panel-section-title">Physics Controls</div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>μ (Static)</span>
+                            <span class="control-val" id="mu-s-val">0.40</span>
+                        </div>
+                        <input type="range" id="mu-s-slider" min="0.01" max="1.2" step="0.01" value="0.40"
+                            oninput="updatePhysics()" class="orange">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>μ (Kinetic)</span>
+                            <span class="control-val" id="mu-k-val">0.30</span>
+                        </div>
+                        <input type="range" id="mu-k-slider" min="0.01" max="1.0" step="0.01" value="0.30"
+                            oninput="updatePhysics()">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Mass (kg)</span>
+                            <span class="control-val" id="mass-val">10 kg</span>
+                        </div>
+                        <input type="range" id="mass-slider" min="1" max="100" step="1" value="10"
+                            oninput="updatePhysics()" class="green">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Applied Force (N)</span>
+                            <span class="control-val" id="force-val">30 N</span>
+                        </div>
+                        <input type="range" id="force-slider" min="0" max="500" step="1" value="30"
+                            oninput="updatePhysics()">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Initial Velocity (m/s)</span>
+                            <span class="control-val" id="vel-val">0 m/s</span>
+                        </div>
+                        <input type="range" id="vel-slider" min="0" max="30" step="0.5" value="0"
+                            oninput="updatePhysics()" class="orange">
+                    </div>
+                    <div class="control-group" id="angle-group" style="display:none;">
+                        <div class="control-label">
+                            <span>Incline Angle (°)</span>
+                            <span class="control-val" id="angle-val">30°</span>
+                        </div>
+                        <input type="range" id="angle-slider" min="1" max="80" step="1" value="30"
+                            oninput="updatePhysics()">
+                    </div>
+                    <div class="control-group" id="belt-group" style="display:none;">
+                        <div class="control-label">
+                            <span>Belt Speed (m/s)</span>
+                            <span class="control-val" id="belt-val">2 m/s</span>
+                        </div>
+                        <input type="range" id="belt-slider" min="0" max="15" step="0.5" value="2"
+                            oninput="updatePhysics()">
+                    </div>
+                </div>
+
+                <!-- METRICS -->
+                <div>
+                    <div class="panel-section-title">Real-Time Metrics</div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-val" id="m-vel">0.0</span>
+                            <span class="metric-lbl">Velocity m/s</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-val orange" id="m-acc">0.0</span>
+                            <span class="metric-lbl">Accel m/s²</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-val green" id="m-ff">0.0</span>
+                            <span class="metric-lbl">Friction N</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-val red" id="m-energy">0.0</span>
+                            <span class="metric-lbl">Heat Energy J</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div>
+                    <div class="panel-section-title">Simulation Control</div>
+                    <div class="action-row">
+                        <button class="action-btn start" id="btn-start" onclick="startSim()">▶ START</button>
+                        <button class="action-btn pause" id="btn-pause" onclick="pauseSim()">⏸ PAUSE</button>
+                        <button class="action-btn reset" onclick="resetSim()">↺ RESET</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERFORMANCE PANEL -->
+    <div class="perf-panel" id="perf-panel">
+        <div class="perf-title">⬡ PERFORMANCE STATS</div>
+        <div class="perf-row"><span>FPS</span><span id="p-fps">60</span></div>
+        <div class="perf-row"><span>Frame Time</span><span id="p-ft">16.6ms</span></div>
+        <div class="perf-row"><span>Sim Time</span><span id="p-time">0.0s</span></div>
+        <div class="perf-row"><span>Updates/s</span><span id="p-ups">60</span></div>
+        <div class="perf-row"><span>Particles</span><span id="p-parts">0</span></div>
+        <div class="perf-row"><span>Sparks</span><span id="p-sparks">0</span></div>
+    </div>
+
+    <script>
+        /* ======================================================
+           FRICTION LAB — Main Engine
+           ====================================================== */
+
+        // ---- Globals ----
+        let G = 9.81;
+        let slowmo = false;
+        let soundOn = false;
+        let currentSim = 0;
+        let simRunning = false;
+        let simTime = 0;
+        let lastTimestamp = 0;
+        let animId = null;
+        let velHistory = [], forceHistory = [];
+        let heatEnergy = 0;
+        let sparkParticles = [];
+        let frameCount = 0, fpsTimer = 0, fps = 60;
+
+        // Physics state
+        let state = { x: 100, vx: 0, vy: 0, sliding: false };
+
+        // Params
+        let params = {
+            muS: 0.40, muK: 0.30, mass: 10, force: 30, vel: 0,
+            angle: 30, beltSpeed: 2, material: 'wood'
+        };
+
+        // Material presets [μs, μk, color]
+        const MATERIALS = {
+            ice: { muS: 0.03, muK: 0.02, color: '#aaeeff', name: 'Ice' },
+            wood: { muS: 0.40, muK: 0.30, color: '#c8834a', name: 'Wood' },
+            rubber: { muS: 0.80, muK: 0.70, color: '#333', name: 'Rubber' },
+            metal: { muS: 0.15, muK: 0.12, color: '#8899aa', name: 'Metal' },
+            sand: { muS: 0.90, muK: 0.75, color: '#d4b483', name: 'Sandpaper' },
+        };
+
+        const SIM_DATA = [
+            {
+                title: 'Sliding Box on Surface',
+                desc: 'Analyze static and kinetic friction as applied force varies. Watch the friction type change as force exceeds the static threshold.',
+                app: 'Friction enables everyday tasks: writing on paper, walking without slipping, vehicle braking, and mechanical fasteners. Applied in braking systems and conveyor machinery.',
+                theory: 'When applied force F < μ_s × N, the box remains stationary (static friction). When F > μ_s × N, the box begins sliding (kinetic friction applies).',
+                formula: 'F_f = μ × N',
+                controls: ['force', 'mass', 'angle'],
+            },
+            {
+                title: 'Car Braking System',
+                desc: 'Simulate vehicle deceleration under braking. Compare stopping distances for different road surfaces and speeds.',
+                app: 'ABS (Anti-lock Braking System) uses controlled friction to maximise deceleration without wheel lock. Tyre grip and road surface μ directly determine braking distance.',
+                theory: 'Braking force = μ × m × g. Stopping distance = v² / (2μg). Wet roads (μ ≈ 0.3) require ~3× longer stopping distance than dry asphalt (μ ≈ 0.8).',
+                formula: 'd = v² / (2μg)',
+                controls: ['force', 'mass'],
+            },
+            {
+                title: 'Bicycle Tire Grip',
+                desc: 'Model rolling friction and lateral grip for a bicycle tyre. Adjust surface and load to see cornering limits.',
+                app: 'Tyre engineers use the "friction circle" concept. A tyre\'s grip is a fixed resource shared between braking and cornering. Wider tyres increase contact patch area and grip.',
+                theory: 'Rolling resistance = Crr × N. Lateral friction limit prevents skidding. Maximum friction force available = μ × m × g regardless of tyre width.',
+                formula: 'F_roll = C_rr × N',
+                controls: ['mass', 'vel'],
+            },
+            {
+                title: 'Walking Shoe–Ground',
+                desc: 'Show how static friction between shoe and ground enables forward propulsion without slipping.',
+                app: 'Rubber soles have μ ≈ 0.8 on dry concrete, ~0.15 on ice. Non-slip shoes use high-μ materials and tread patterns to channel water away from the contact patch.',
+                theory: 'The foot pushes backward; ground friction pushes forward (static). Maximum speed before slip: when thrust > μ_s × m × g. Ice with μ = 0.03 makes walking nearly impossible.',
+                formula: 'F_thrust ≤ μ_s × mg',
+                controls: ['mass', 'vel', 'force'],
+            },
+            {
+                title: 'Conveyor Belt',
+                desc: 'Simulate friction-driven object transport. See how belt speed vs. object speed determines friction direction.',
+                app: 'Conveyor belts in factories, airports (luggage), supermarkets, and mining use friction to transport materials. Belt tension and friction coefficient determine load capacity.',
+                theory: 'If object speed < belt speed: friction acts forward (driving). If equal: no friction. If object speed > belt speed: friction acts backward (braking). Net force = μ × m × g.',
+                formula: 'F = μmg (direction varies)',
+                controls: ['mass', 'belt'],
+            },
+            {
+                title: 'Inclined Plane',
+                desc: 'Classic static and kinetic friction on a slope. Varies with angle θ. Find the critical angle where sliding begins.',
+                app: 'Ramps, roads, ski slopes, screw threads, and wedges all rely on inclined plane friction principles. The critical angle tanθ = μ_s is used in engineering design.',
+                theory: 'Component along slope = mg sinθ. Normal force N = mg cosθ. Box slides when mg sinθ > μ_s × mg cosθ, i.e., when tanθ > μ_s. Critical angle: θ_c = arctan(μ_s).',
+                formula: 'tanθ_c = μ_s',
+                controls: ['mass', 'angle', 'force'],
+            }
+        ];
+
+        /* ===== PARTICLES BG ===== */
+        const pCanvas = document.getElementById('particles-bg');
+        const pCtx = pCanvas.getContext('2d');
+        let bgParticles = [];
+        function initParticles() {
+            pCanvas.width = window.innerWidth;
+            pCanvas.height = window.innerHeight;
+            bgParticles = Array.from({ length: 80 }, () => ({
+                x: Math.random() * pCanvas.width,
+                y: Math.random() * pCanvas.height,
+                r: Math.random() * 1.5 + 0.3,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                a: Math.random() * 0.5 + 0.1,
+            }));
+        }
+        function drawParticles() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            bgParticles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = pCanvas.width;
+                if (p.x > pCanvas.width) p.x = 0;
+                if (p.y < 0) p.y = pCanvas.height;
+                if (p.y > pCanvas.height) p.y = 0;
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                pCtx.fillStyle = `rgba(29,95,168,${p.a * 0.25})`;
+                pCtx.fill();
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        initParticles();
+        drawParticles();
+        window.addEventListener('resize', initParticles);
+
+        /* ===== INTRO SEQUENCE ===== */
+        const messages = [
+            'INITIALIZING PHYSICS ENGINE...',
+            'LOADING SURFACE MODELS...',
+            'CALIBRATING FRICTION COEFFICIENTS...',
+            'COMPILING EQUATIONS OF MOTION...',
+            'GENERATING PARTICLE SYSTEM...',
+            'MOUNTING SIMULATION CORES...',
+            'SYSTEM READY ✓'
+        ];
+        let introStep = 0;
+        const introProgress = document.getElementById('intro-progress');
+        const introStatus = document.getElementById('intro-status');
+        const introBtn = document.getElementById('intro-enter-btn');
+        function runIntro() {
+            if (introStep >= messages.length) {
+                introBtn.classList.add('show');
+                return;
+            }
+            introStatus.textContent = messages[introStep];
+            introProgress.style.width = ((introStep + 1) / messages.length * 100) + '%';
+            introStep++;
+            setTimeout(runIntro, introStep === messages.length ? 200 : 280 + Math.random() * 200);
+        }
+        setTimeout(runIntro, 600);
+
+        function enterApp() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            const app = document.getElementById('main-app');
+            app.classList.add('visible');
+            setTimeout(() => { loadSim(0); resizeCanvases(); }, 100);
+        }
+
+        /* ===== CANVAS SETUP ===== */
+        const mainCanvas = document.getElementById('main-canvas');
+        const sparkCanvas = document.getElementById('spark-canvas');
+        const mCtx = mainCanvas.getContext('2d');
+        const sCtx = sparkCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            const container = mainCanvas.parentElement;
+            const W = container.clientWidth;
+            const H = 320;
+            mainCanvas.width = W; mainCanvas.height = H;
+            sparkCanvas.width = W; sparkCanvas.height = H;
+        }
+
+        /* ===== GRAPH CANVASES ===== */
+        const velCanvas = document.getElementById('graph-vel');
+        const forceCanvas = document.getElementById('graph-force');
+        const vCtx = velCanvas.getContext('2d');
+        const fCtx = forceCanvas.getContext('2d');
+        function resizeGraphs() {
+            [velCanvas, forceCanvas].forEach(c => {
+                c.width = c.parentElement.clientWidth;
+                c.height = 100;
+            });
+        }
+        window.addEventListener('resize', () => { resizeCanvases(); resizeGraphs(); });
+
+        /* ===== PARAM READERS ===== */
+        function readParams() {
+            params.muS = parseFloat(document.getElementById('mu-s-slider').value);
+            params.muK = parseFloat(document.getElementById('mu-k-slider').value);
+            params.mass = parseFloat(document.getElementById('mass-slider').value);
+            params.force = parseFloat(document.getElementById('force-slider').value);
+            params.vel = parseFloat(document.getElementById('vel-slider').value);
+            params.angle = parseFloat(document.getElementById('angle-slider').value);
+            params.beltSpeed = parseFloat(document.getElementById('belt-slider').value);
+        }
+        function updatePhysics() {
+            readParams();
+            document.getElementById('mu-s-val').textContent = params.muS.toFixed(2);
+            document.getElementById('mu-k-val').textContent = params.muK.toFixed(2);
+            document.getElementById('mass-val').textContent = params.mass.toFixed(0) + ' kg';
+            document.getElementById('force-val').textContent = params.force.toFixed(0) + ' N';
+            document.getElementById('vel-val').textContent = params.vel.toFixed(1) + ' m/s';
+            document.getElementById('angle-val').textContent = params.angle.toFixed(0) + '°';
+            document.getElementById('belt-val').textContent = params.beltSpeed.toFixed(1) + ' m/s';
+            if (!simRunning) renderFrame();
+        }
+
+        /* ===== MATERIAL PRESETS ===== */
+        function setMaterial(mat) {
+            params.material = mat;
+            document.querySelectorAll('.mat-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('mat-' + mat).classList.add('active');
+            const m = MATERIALS[mat];
+            document.getElementById('mu-s-slider').value = m.muS;
+            document.getElementById('mu-k-slider').value = m.muK;
+            updatePhysics();
+        }
+
+        /* ===== SIM LOADER ===== */
+        function loadSim(idx) {
+            if (simRunning) resetSim();
+            currentSim = idx;
+            document.querySelectorAll('.sim-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+            const d = SIM_DATA[idx];
+            document.getElementById('sim-title').textContent = d.title;
+            document.getElementById('sim-desc').textContent = d.desc;
+            document.getElementById('app-text').textContent = d.app;
+            document.getElementById('theory-detail').innerHTML = `<p>${d.theory}</p>`;
+            document.getElementById('formula-eq').textContent = d.formula;
+            // Show/hide special controls
+            document.getElementById('angle-group').style.display = (idx === 5) ? '' : 'none';
+            document.getElementById('belt-group').style.display = (idx === 4) ? '' : 'none';
+            // Reset state
+            state = { x: 80, vx: 0, vy: 0, sliding: false };
+            velHistory = []; forceHistory = [];
+            simTime = 0; heatEnergy = 0;
+            updatePhysics();
+            renderFrame();
+        }
+
+        /* ===== PHYSICS CALCULATIONS ===== */
+        function calcPhysics(dt) {
+            const { muS, muK, mass, force, angle, beltSpeed } = params;
+            let N, ff, fApplied, acc;
+
+            switch (currentSim) {
+                case 0: // Sliding box
+                    N = mass * G;
+                    fApplied = force;
+                    ff = computeFriction(fApplied, muS, muK, N, state.vx);
+                    acc = (fApplied - ff) / mass;
+                    break;
+
+                case 1: // Car braking
+                    N = mass * G;
+                    fApplied = -force; // braking = opposing motion
+                    ff = computeFriction(Math.abs(state.vx) * mass * G * 0.1, muS, muK, N, state.vx);
+                    acc = (state.vx > 0.05) ? -(muK * G) : 0;
+                    if (state.vx < 0.05 && state.vx > -0.05) { state.vx = 0; acc = 0; }
+                    break;
+
+                case 2: // Bicycle
+                    N = mass * G;
+                    ff = muK * N * 0.05; // rolling resistance (low)
+                    acc = (state.vx > 0.1) ? -ff / mass : 0;
+                    break;
+
+                case 3: // Walking
+                    N = mass * G;
+                    const maxThrust = muS * N;
+                    fApplied = Math.min(force, maxThrust);
+                    ff = computeFriction(fApplied, muS, muK, N, state.vx);
+                    acc = fApplied / mass;
+                    if (state.vx > 3) acc = 0; // max walking speed
+                    break;
+
+                case 4: // Conveyor belt
+                    N = mass * G;
+                    const relV = beltSpeed - state.vx;
+                    ff = muK * N * Math.sign(relV);
+                    acc = ff / mass;
+                    if (Math.abs(state.vx - beltSpeed) < 0.05) { state.vx = beltSpeed; acc = 0; }
+                    break;
+
+                case 5: // Inclined plane
+                    const theta = angle * Math.PI / 180;
+                    N = mass * G * Math.cos(theta);
+                    const gravity_component = mass * G * Math.sin(theta);
+                    fApplied = gravity_component + force * Math.cos(theta);
+                    ff = computeFriction(fApplied, muS, muK, N, state.vx);
+                    acc = (gravity_component + force * Math.cos(theta) - ff) / mass;
+                    break;
+
+                default:
+                    N = mass * G; ff = 0; acc = 0;
+            }
+
+            // Update state
+            state.vx += acc * dt;
+            if (state.vx < 0) state.vx = 0;
+            state.x += state.vx * dt * 60; // scale for visual
+            // Wrap around
+            const W = mainCanvas.width;
+            if (state.x > W - 50) state.x = 80;
+
+            // Heat energy
+            heatEnergy += Math.abs(ff * state.vx * dt);
+
+            // Update indicators
+            const isSliding = Math.abs(state.vx) > 0.05;
+            const indicator = document.getElementById('friction-indicator');
+            indicator.textContent = isSliding ? 'KINETIC FRICTION' : 'STATIC FRICTION';
+            indicator.className = 'friction-indicator ' + (isSliding ? 'kinetic' : 'static');
+
+            // Sparks
+            if (Math.abs(ff) > muK * params.mass * G * 0.7 && isSliding) {
+                emitSparks(state.x + 20, mainCanvas.height - 90);
+            }
+
+            // Update formula display
+            const normalForce = params.mass * G;
+            const frictionForce = isSliding ? params.muK * normalForce : Math.min(params.force, params.muS * normalForce);
+            const netForce = params.force - frictionForce;
+            document.getElementById('val-ff').textContent = frictionForce.toFixed(2) + ' N';
+            document.getElementById('val-n').textContent = normalForce.toFixed(2) + ' N';
+            document.getElementById('val-fnet').textContent = netForce.toFixed(2) + ' N';
+            document.getElementById('val-acc').textContent = acc.toFixed(3) + ' m/s²';
+
+            // Metrics
+            document.getElementById('m-vel').textContent = state.vx.toFixed(2);
+            document.getElementById('m-acc').textContent = acc.toFixed(3);
+            document.getElementById('m-ff').textContent = frictionForce.toFixed(2);
+            document.getElementById('m-energy').textContent = heatEnergy.toFixed(1);
+
+            // History
+            velHistory.push(state.vx);
+            forceHistory.push({ applied: params.force, friction: frictionForce });
+            if (velHistory.length > 200) velHistory.shift();
+            if (forceHistory.length > 200) forceHistory.shift();
+        }
+
+        function computeFriction(fApplied, muS, muK, N, vx) {
+            const fsMax = muS * N;
+            const fk = muK * N;
+            if (Math.abs(vx) < 0.01) {
+                return Math.abs(fApplied) <= fsMax ? fApplied : fk * Math.sign(fApplied);
+            }
+            return fk * Math.sign(vx);
+        }
+
+        /* ===== SPARKS ===== */
+        function emitSparks(x, y) {
+            const count = Math.min(3, Math.floor(state.vx / 2) + 1);
+            for (let i = 0; i < count; i++) {
+                sparkParticles.push({
+                    x, y,
+                    vx: (Math.random() - 0.3) * 4,
+                    vy: -(Math.random() * 3 + 1),
+                    life: 1, decay: Math.random() * 0.08 + 0.06,
+                    r: Math.random() * 2 + 1,
+                    color: Math.random() > 0.5 ? '#c2530a' : '#d97706',
+                });
+            }
+        }
+        function updateSparks() {
+            sCtx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+            sparkParticles = sparkParticles.filter(p => p.life > 0);
+            document.getElementById('p-sparks').textContent = sparkParticles.length;
+            sparkParticles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                p.vy += 0.15;
+                p.life -= p.decay;
+                sCtx.globalAlpha = Math.max(0, p.life);
+                sCtx.beginPath();
+                sCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                sCtx.fillStyle = p.color;
+                sCtx.fill();
+            });
+            sCtx.globalAlpha = 1;
+        }
+
+        /* ===== RENDER FRAMES ===== */
+        function renderFrame() {
+            resizeCanvases();
+            const W = mainCanvas.width, H = mainCanvas.height;
+            mCtx.clearRect(0, 0, W, H);
+            // Light canvas background
+            mCtx.fillStyle = '#f8fafc';
+            mCtx.fillRect(0, 0, W, H);
+
+            switch (currentSim) {
+                case 0: drawSlidingBox(W, H); break;
+                case 1: drawCar(W, H); break;
+                case 2: drawBicycle(W, H); break;
+                case 3: drawWalking(W, H); break;
+                case 4: drawConveyor(W, H); break;
+                case 5: drawInclinedPlane(W, H); break;
+            }
+            drawGraphs();
+        }
+
+        /* ===== DRAW: SLIDING BOX ===== */
+        function drawSlidingBox(W, H) {
+            const ground = H - 80;
+            // Ground surface
+            const mat = MATERIALS[params.material];
+            mCtx.fillStyle = mat.color + '33';
+            mCtx.fillRect(0, ground, W, H - ground);
+            mCtx.strokeStyle = mat.color;
+            mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.moveTo(0, ground); mCtx.lineTo(W, ground); mCtx.stroke();
+
+            // Surface texture
+            for (let x = 0; x < W; x += 20) {
+                mCtx.strokeStyle = mat.color + '44';
+                mCtx.lineWidth = 1;
+                mCtx.beginPath(); mCtx.moveTo(x, ground); mCtx.lineTo(x + 10, ground + 8); mCtx.stroke();
+            }
+
+            // Box
+            const bx = state.x, by = ground - 50, bw = 50, bh = 50;
+            const gradient = mCtx.createLinearGradient(bx, by, bx + bw, by + bh);
+            gradient.addColorStop(0, '#dbeafe'); gradient.addColorStop(1, '#bfdbfe');
+            mCtx.fillStyle = gradient;
+            mCtx.fillRect(bx, by, bw, bh);
+            mCtx.strokeStyle = '#1d5fa8';
+            mCtx.lineWidth = 1.5;
+            mCtx.strokeRect(bx, by, bw, bh);
+
+            // Mass label
+            mCtx.fillStyle = '#1d5fa8';
+            mCtx.font = 'bold 12px Share Tech Mono';
+            mCtx.textAlign = 'center';
+            mCtx.fillText(params.mass + 'kg', bx + bw / 2, by + bh / 2 + 4);
+
+            // Force arrow
+            if (params.force > 0) {
+                drawArrow(mCtx, bx + bw, ground - 25, bx + bw + Math.min(80, params.force / 3), ground - 25, '#c2530a', params.force.toFixed(0) + 'N');
+            }
+            // Friction arrow
+            const N = params.mass * G;
+            const fsMax = params.muS * N;
+            const ff = Math.abs(state.vx) > 0.05 ? params.muK * N : Math.min(params.force, fsMax);
+            if (ff > 0) {
+                drawArrow(mCtx, bx, ground - 25, bx - Math.min(80, ff / 3), ground - 25, '#187a46', ff.toFixed(0) + 'N');
+            }
+            // Velocity
+            if (state.vx > 0.2) {
+                mCtx.fillStyle = '#92580a';
+                mCtx.font = '11px Share Tech Mono';
+                mCtx.textAlign = 'center';
+                mCtx.fillText('v=' + state.vx.toFixed(1) + 'm/s', bx + bw / 2, by - 8);
+            }
+
+            // Normal force arrow (up)
+            drawArrow(mCtx, bx + bw / 2, ground, bx + bw / 2, ground - N / 5 - 5, '#0d7490', 'N=' + (N).toFixed(0));
+        }
+
+        /* ===== DRAW: CAR ===== */
+        function drawCar(W, H) {
+            const ground = H - 70;
+            // Road
+            mCtx.fillStyle = '#d1d8e8';
+            mCtx.fillRect(0, ground, W, H - ground);
+            mCtx.strokeStyle = '#9aa5bb';
+            mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.moveTo(0, ground); mCtx.lineTo(W, ground); mCtx.stroke();
+            // Road markings
+            for (let x = -state.x % 80; x < W; x += 80) {
+                mCtx.fillStyle = '#92580a55';
+                mCtx.fillRect(x, ground + H * 0.05, 50, 4);
+            }
+            // Car body
+            const cx = state.x, cy = ground - 35;
+            mCtx.fillStyle = '#bfdbfe';
+            mCtx.beginPath();
+            mCtx.roundRect(cx, cy, 100, 35, 5);
+            mCtx.fill();
+            mCtx.strokeStyle = '#1d5fa888';
+            mCtx.lineWidth = 1;
+            mCtx.stroke();
+            // Cabin
+            mCtx.fillStyle = '#93c5fd';
+            mCtx.beginPath();
+            mCtx.moveTo(cx + 15, cy);
+            mCtx.lineTo(cx + 30, cy - 20);
+            mCtx.lineTo(cx + 75, cy - 20);
+            mCtx.lineTo(cx + 90, cy);
+            mCtx.closePath();
+            mCtx.fill();
+            // Windows
+            mCtx.fillStyle = '#1d5fa822';
+            mCtx.beginPath();
+            mCtx.moveTo(cx + 32, cy - 2);
+            mCtx.lineTo(cx + 42, cy - 17);
+            mCtx.lineTo(cx + 73, cy - 17);
+            mCtx.lineTo(cx + 88, cy - 2);
+            mCtx.closePath();
+            mCtx.fill();
+            // Wheels
+            drawWheel(mCtx, cx + 18, ground, 14, state.x * 0.05, state.vx > 0.1);
+            drawWheel(mCtx, cx + 82, ground, 14, state.x * 0.05, state.vx > 0.1);
+            // Speed
+            mCtx.fillStyle = '#92580a';
+            mCtx.font = 'bold 13px Share Tech Mono';
+            mCtx.textAlign = 'center';
+            mCtx.fillText((state.vx * 3.6).toFixed(1) + ' km/h', cx + 50, cy - 28);
+            if (params.force > 0) {
+                mCtx.fillStyle = '#b91c1c';
+                mCtx.font = '10px Rajdhani';
+                mCtx.fillText('⛔ BRAKING', cx + 50, cy - 42);
+            }
+        }
+
+        function drawWheel(ctx, x, y, r, rot, spinning) {
+            ctx.save(); ctx.translate(x, y);
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.fillStyle = '#475569'; ctx.fill();
+            ctx.strokeStyle = spinning ? '#c2530a' : '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+            if (spinning) {
+                ctx.rotate(rot);
+                for (let i = 0; i < 4; i++) {
+                    ctx.rotate(Math.PI / 2);
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, r - 2);
+                    ctx.strokeStyle = '#c2530a88'; ctx.lineWidth = 1.5; ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+
+        /* ===== DRAW: BICYCLE ===== */
+        function drawBicycle(W, H) {
+            const ground = H - 70;
+            // Ground
+            mCtx.fillStyle = MATERIALS[params.material].color + '22';
+            mCtx.fillRect(0, ground, W, H - ground);
+            mCtx.strokeStyle = MATERIALS[params.material].color + '88';
+            mCtx.lineWidth = 2; mCtx.beginPath(); mCtx.moveTo(0, ground); mCtx.lineTo(W, ground); mCtx.stroke();
+
+            const cx = state.x + 20;
+            // Rear wheel
+            drawWheel(mCtx, cx, ground, 20, state.x * 0.08, state.vx > 0.1);
+            // Front wheel
+            drawWheel(mCtx, cx + 55, ground, 20, state.x * 0.08, state.vx > 0.1);
+            // Frame
+            mCtx.strokeStyle = '#1d5fa8'; mCtx.lineWidth = 2;
+            // Main triangle
+            mCtx.beginPath(); mCtx.moveTo(cx, ground); mCtx.lineTo(cx + 20, ground - 35);
+            mCtx.lineTo(cx + 55, ground); mCtx.stroke();
+            mCtx.beginPath(); mCtx.moveTo(cx + 20, ground - 35); mCtx.lineTo(cx + 38, ground - 35);
+            mCtx.lineTo(cx + 55, ground); mCtx.stroke();
+            // Fork & handlebar
+            mCtx.beginPath(); mCtx.moveTo(cx + 38, ground - 35); mCtx.lineTo(cx + 55, ground); mCtx.stroke();
+            mCtx.beginPath(); mCtx.moveTo(cx + 38, ground - 35); mCtx.lineTo(cx + 32, ground - 48);
+            mCtx.lineTo(cx + 28, ground - 48); mCtx.lineTo(cx + 44, ground - 48); mCtx.stroke();
+            // Seat
+            mCtx.beginPath(); mCtx.moveTo(cx + 20, ground - 35); mCtx.lineTo(cx + 20, ground - 48);
+            mCtx.moveTo(cx + 14, ground - 48); mCtx.lineTo(cx + 26, ground - 48); mCtx.stroke();
+            // Rider
+            mCtx.beginPath(); mCtx.arc(cx + 22, ground - 58, 8, 0, Math.PI * 2);
+            mCtx.fillStyle = '#dbeafe'; mCtx.fill(); mCtx.strokeStyle = '#4a5568'; mCtx.stroke();
+
+            // Rolling resistance arrow
+            if (state.vx > 0.2) {
+                drawArrow(mCtx, cx - 5, ground - 15, cx - 5 - 40, ground - 15, '#c2530a', 'F_rr');
+            }
+            mCtx.fillStyle = '#92580a'; mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText('v=' + state.vx.toFixed(2) + 'm/s', cx + 27, ground - 70);
+        }
+
+        /* ===== DRAW: WALKING ===== */
+        function drawWalking(W, H) {
+            const ground = H - 70;
+            const mat = MATERIALS[params.material];
+            mCtx.fillStyle = mat.color + '22';
+            mCtx.fillRect(0, ground, W, H - ground);
+            mCtx.strokeStyle = mat.color; mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.moveTo(0, ground); mCtx.lineTo(W, ground); mCtx.stroke();
+
+            const px = state.x + 20;
+            const step = Math.sin(state.x * 0.12) * 18;
+            // Legs
+            mCtx.strokeStyle = '#1d5fa8'; mCtx.lineWidth = 3;
+            // Left leg
+            mCtx.beginPath(); mCtx.moveTo(px, ground - 40); mCtx.lineTo(px - 8 + step, ground - 20); mCtx.lineTo(px - 12 + step, ground); mCtx.stroke();
+            // Right leg
+            mCtx.beginPath(); mCtx.moveTo(px, ground - 40); mCtx.lineTo(px + 8 - step, ground - 20); mCtx.lineTo(px + 12 - step, ground); mCtx.stroke();
+            // Shoes
+            mCtx.fillStyle = mat.color; mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.ellipse(px - 12 + step, ground, 12, 5, 0, 0, Math.PI * 2); mCtx.fill();
+            mCtx.beginPath(); mCtx.ellipse(px + 12 - step, ground, 12, 5, 0, 0, Math.PI * 2); mCtx.fill();
+            // Body
+            mCtx.fillStyle = '#dbeafe'; mCtx.strokeStyle = '#1d5fa8'; mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.roundRect(px - 12, ground - 80, 24, 40, 4); mCtx.fill(); mCtx.stroke();
+            // Head
+            mCtx.beginPath(); mCtx.arc(px, ground - 90, 10, 0, Math.PI * 2); mCtx.fill(); mCtx.stroke();
+            // Arms
+            mCtx.beginPath(); mCtx.moveTo(px - 10, ground - 70);
+            mCtx.lineTo(px - 18 + step * 0.5, ground - 50);
+            mCtx.moveTo(px + 10, ground - 70);
+            mCtx.lineTo(px + 18 - step * 0.5, ground - 50); mCtx.stroke();
+
+            // Friction arrow at shoe
+            if (state.vx > 0.1) {
+                const fx = px - 12 + step;
+                drawArrow(mCtx, fx, ground + 10, fx + 40, ground + 10, '#187a46', 'F_static');
+            }
+            mCtx.fillStyle = '#92580a'; mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText('v=' + state.vx.toFixed(2) + 'm/s', px, ground - 105);
+        }
+
+        /* ===== DRAW: CONVEYOR BELT ===== */
+        function drawConveyor(W, H) {
+            const top = H - 120, bot = H - 80;
+            const beltOffset = (simTime * params.beltSpeed * 20) % 40;
+            // Belt body
+            mCtx.fillStyle = '#cbd5e1'; mCtx.fillRect(40, top, W - 80, bot - top);
+            mCtx.strokeStyle = '#94a3b8'; mCtx.lineWidth = 2;
+            mCtx.strokeRect(40, top, W - 80, bot - top);
+            // Belt strips
+            for (let x = 40 - beltOffset; x < W - 40; x += 40) {
+                mCtx.fillStyle = '#b8c4d4';
+                mCtx.fillRect(x, top, 30, bot - top);
+            }
+            mCtx.strokeStyle = '#1d5fa844'; mCtx.lineWidth = 1;
+            mCtx.beginPath(); mCtx.moveTo(40, top); mCtx.lineTo(W - 40, top); mCtx.stroke();
+            mCtx.beginPath(); mCtx.moveTo(40, bot); mCtx.lineTo(W - 40, bot); mCtx.stroke();
+            // Rollers
+            [40, W - 40].forEach(rx => {
+                mCtx.beginPath(); mCtx.arc(rx, (top + bot) / 2, (bot - top) / 2, 0, Math.PI * 2);
+                mCtx.fillStyle = '#e2e8f0'; mCtx.fill();
+                mCtx.strokeStyle = '#1d5fa888'; mCtx.lineWidth = 2; mCtx.stroke();
+            });
+            // Belt speed arrow
+            drawArrow(mCtx, 60, top - 10, 60 + 80, top - 10, '#c2530a', params.beltSpeed.toFixed(1) + 'm/s belt');
+            // Object on belt
+            const ox = Math.min(Math.max(state.x, 60), W - 100);
+            mCtx.fillStyle = '#dbeafe'; mCtx.strokeStyle = '#1d5fa8'; mCtx.lineWidth = 1.5;
+            mCtx.beginPath(); mCtx.roundRect(ox - 20, top - 30, 40, 30, 3); mCtx.fill(); mCtx.stroke();
+            mCtx.fillStyle = '#4a5568'; mCtx.font = '10px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText(params.mass + 'kg', ox, top - 10);
+
+            // Friction direction
+            const rel = params.beltSpeed - state.vx;
+            if (Math.abs(rel) > 0.1) {
+                drawArrow(mCtx, ox, top - 40, ox + Math.sign(rel) * 50, top - 40, '#187a46',
+                    Math.sign(rel) > 0 ? 'F→' : '←F');
+            }
+            mCtx.fillStyle = '#92580a'; mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText('obj:' + state.vx.toFixed(1) + 'm/s', ox, top - 50);
+        }
+
+        /* ===== DRAW: INCLINED PLANE ===== */
+        function drawInclinedPlane(W, H) {
+            const theta = params.angle * Math.PI / 180;
+            const baseX = 60, baseY = H - 60;
+            const len = W - 120;
+            const endX = baseX + len * Math.cos(theta);
+            const endY = baseY - len * Math.sin(theta);
+
+            // Surface
+            mCtx.fillStyle = MATERIALS[params.material].color + '22';
+            mCtx.beginPath();
+            mCtx.moveTo(baseX, baseY);
+            mCtx.lineTo(endX, endY);
+            mCtx.lineTo(endX, baseY);
+            mCtx.closePath();
+            mCtx.fill();
+            mCtx.strokeStyle = MATERIALS[params.material].color;
+            mCtx.lineWidth = 2;
+            mCtx.beginPath(); mCtx.moveTo(baseX, baseY); mCtx.lineTo(endX, endY); mCtx.stroke();
+            mCtx.beginPath(); mCtx.moveTo(baseX, baseY); mCtx.lineTo(endX, baseY); mCtx.stroke();
+
+            // Angle arc
+            mCtx.strokeStyle = '#4a556866'; mCtx.lineWidth = 1;
+            mCtx.beginPath(); mCtx.arc(baseX, baseY, 40, -theta, 0); mCtx.stroke();
+            mCtx.fillStyle = '#4a5568'; mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'left';
+            mCtx.fillText('θ=' + params.angle + '°', baseX + 46, baseY - 10);
+
+            // Box on slope
+            const t = Math.min(1, state.x / 300);
+            const boxCX = baseX + len * 0.15 * (1 - t) * Math.cos(theta) + len * 0.75 * t * Math.cos(theta);
+            const boxCY = baseY - len * 0.15 * (1 - t) * Math.sin(theta) - len * 0.75 * t * Math.sin(theta);
+            mCtx.save();
+            mCtx.translate(boxCX, boxCY);
+            mCtx.rotate(-theta);
+            const bw = 40, bh = 35;
+            mCtx.fillStyle = '#dbeafe'; mCtx.strokeStyle = '#1d5fa8'; mCtx.lineWidth = 1.5;
+            mCtx.fillRect(-bw / 2, -bh, bw, bh); mCtx.strokeRect(-bw / 2, -bh, bw, bh);
+            mCtx.fillStyle = '#1d5fa8'; mCtx.font = '10px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText(params.mass + 'kg', 0, -bh / 2);
+            mCtx.restore();
+
+            // Force vectors
+            const N = params.mass * G * Math.cos(theta);
+            const gComp = params.mass * G * Math.sin(theta);
+            // Gravity component (down slope)
+            drawArrow(mCtx, boxCX, boxCY, boxCX + gComp * 0.15 * Math.cos(theta), boxCY + gComp * 0.15 * Math.sin(theta), '#b91c1c', 'mg sinθ');
+            // Normal
+            drawArrow(mCtx, boxCX, boxCY, boxCX + N * 0.15 * (-Math.sin(theta)), boxCY + N * 0.15 * (-Math.cos(theta)), '#0d7490', 'N');
+
+            // Critical angle indicator
+            const thetaCrit = Math.atan(params.muS) * 180 / Math.PI;
+            mCtx.fillStyle = params.angle >= thetaCrit ? '#b91c1c' : '#187a46';
+            mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'right';
+            mCtx.fillText('θ_crit=' + thetaCrit.toFixed(1) + '° | ' +
+                (params.angle >= thetaCrit ? 'SLIDING!' : 'STATIC'), W - 15, 20);
+
+            mCtx.fillStyle = '#92580a'; mCtx.font = '11px Share Tech Mono'; mCtx.textAlign = 'center';
+            mCtx.fillText('v=' + state.vx.toFixed(2) + 'm/s', boxCX, boxCY - 25);
+        }
+
+        /* ===== ARROW HELPER ===== */
+        function drawArrow(ctx, x1, y1, x2, y2, color, label) {
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            if (len < 5) return;
+            ctx.strokeStyle = color; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            const aw = 8;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - aw * Math.cos(angle - 0.4), y2 - aw * Math.sin(angle - 0.4));
+            ctx.lineTo(x2 - aw * Math.cos(angle + 0.4), y2 - aw * Math.sin(angle + 0.4));
+            ctx.closePath(); ctx.fill();
+            if (label) {
+                ctx.fillStyle = color;
+                ctx.font = '10px Share Tech Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, (x1 + x2) / 2, (y1 + y2) / 2 - 6);
+            }
+        }
+
+        /* ===== DRAW GRAPHS ===== */
+        function drawGraphs() {
+            drawVelGraph();
+            drawForceGraph();
+        }
+
+        function drawVelGraph() {
+            resizeGraphs();
+            const W = velCanvas.width, H = velCanvas.height;
+            vCtx.clearRect(0, 0, W, H);
+            vCtx.fillStyle = '#f8fafc'; vCtx.fillRect(0, 0, W, H);
+            if (velHistory.length < 2) return;
+
+            const maxV = Math.max(1, ...velHistory) * 1.2;
+            vCtx.strokeStyle = 'rgba(29,95,168,0.12)'; vCtx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                const y = H - (i / 3) * H;
+                vCtx.beginPath(); vCtx.moveTo(0, y); vCtx.lineTo(W, y); vCtx.stroke();
+                vCtx.fillStyle = 'rgba(29,95,168,0.5)'; vCtx.font = '9px Share Tech Mono'; vCtx.textAlign = 'left';
+                vCtx.fillText((maxV * i / 3).toFixed(1), 2, y - 2);
+            }
+
+            vCtx.strokeStyle = '#0d7490'; vCtx.lineWidth = 2;
+            vCtx.beginPath();
+            velHistory.forEach((v, i) => {
+                const x = (i / velHistory.length) * W;
+                const y = H - (v / maxV) * H;
+                i === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+            });
+            vCtx.stroke();
+        }
+
+        function drawForceGraph() {
+            const W = forceCanvas.width, H = forceCanvas.height;
+            fCtx.clearRect(0, 0, W, H);
+            fCtx.fillStyle = '#f8fafc'; fCtx.fillRect(0, 0, W, H);
+            if (forceHistory.length < 2) return;
+
+            const maxF = Math.max(1, ...forceHistory.map(f => f.applied), ...forceHistory.map(f => f.friction)) * 1.2;
+            // Grid
+            fCtx.strokeStyle = 'rgba(29,95,168,0.1)'; fCtx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                const y = H - (i / 3) * H;
+                fCtx.beginPath(); fCtx.moveTo(0, y); fCtx.lineTo(W, y); fCtx.stroke();
+            }
+            // Applied
+            fCtx.strokeStyle = '#c2530a'; fCtx.lineWidth = 1.5;
+            fCtx.beginPath();
+            forceHistory.forEach((f, i) => {
+                const x = (i / forceHistory.length) * W, y = H - (f.applied / maxF) * H;
+                i === 0 ? fCtx.moveTo(x, y) : fCtx.lineTo(x, y);
+            }); fCtx.stroke();
+            // Friction
+            fCtx.strokeStyle = '#187a46';
+            fCtx.beginPath();
+            forceHistory.forEach((f, i) => {
+                const x = (i / forceHistory.length) * W, y = H - (f.friction / maxF) * H;
+                i === 0 ? fCtx.moveTo(x, y) : fCtx.lineTo(x, y);
+            }); fCtx.stroke();
+            // Legend
+            fCtx.fillStyle = '#c2530a'; fCtx.font = '9px Share Tech Mono'; fCtx.textAlign = 'right';
+            fCtx.fillText('Applied', W - 5, 10);
+            fCtx.fillStyle = '#187a46';
+            fCtx.fillText('Friction', W - 5, 22);
+        }
+
+        /* ===== ANIMATION LOOP ===== */
+        function loop(ts) {
+            if (!simRunning) return;
+            const dt0 = lastTimestamp ? (ts - lastTimestamp) / 1000 : 0.016;
+            lastTimestamp = ts;
+            const dt = Math.min(dt0, 0.05) * (slowmo ? 0.25 : 1);
+            simTime += dt;
+
+            calcPhysics(dt);
+            renderFrame();
+            updateSparks();
+
+            // FPS counter
+            frameCount++;
+            if (ts - fpsTimer > 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                fpsTimer = ts;
+                document.getElementById('p-fps').textContent = fps;
+                document.getElementById('p-ft').textContent = (1000 / fps).toFixed(1) + 'ms';
+                document.getElementById('p-time').textContent = simTime.toFixed(1) + 's';
+                document.getElementById('p-ups').textContent = fps;
+                document.getElementById('p-parts').textContent = bgParticles.length;
+            }
+
+            animId = requestAnimationFrame(loop);
+        }
+
+        /* ===== CONTROLS ===== */
+        function startSim() {
+            if (simRunning) return;
+            simRunning = true;
+            if (state.vx === 0) state.vx = params.vel;
+            lastTimestamp = 0;
+            setStatus('running', 'RUNNING');
+            animId = requestAnimationFrame(loop);
+        }
+        function pauseSim() {
+            simRunning = false;
+            if (animId) cancelAnimationFrame(animId);
+            setStatus('paused', 'PAUSED');
+        }
+        function resetSim() {
+            simRunning = false;
+            if (animId) cancelAnimationFrame(animId);
+            state = { x: 80, vx: 0, vy: 0, sliding: false };
+            velHistory = []; forceHistory = [];
+            simTime = 0; heatEnergy = 0; sparkParticles = [];
+            setStatus('stopped', 'READY');
+            updatePhysics();
+            renderFrame();
+        }
+        function setStatus(cls, text) {
+            const el = document.getElementById('sim-status');
+            el.className = 'status-pill ' + cls;
+            el.textContent = text;
+        }
+
+        function toggleSlowmo() {
+            slowmo = !slowmo;
+            document.getElementById('slowmo-btn').classList.toggle('active', slowmo);
+            document.getElementById('slowmo-badge').classList.toggle('show', slowmo);
+        }
+        function toggleSound() {
+            soundOn = !soundOn;
+            document.getElementById('sound-btn').classList.toggle('active', soundOn);
+        }
+        function togglePerf() {
+            document.getElementById('perf-panel').classList.toggle('show');
+            document.getElementById('perf-btn').classList.toggle('active');
+        }
+        function updateGravity() {
+            G = parseFloat(document.getElementById('gravity-select').value);
+            updatePhysics();
+        }
+        function switchTab(idx) {
+            document.querySelectorAll('.info-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            document.querySelectorAll('.info-content').forEach((c, i) => c.classList.toggle('active', i === idx));
+        }
+
+        /* ===== INIT ===== */
+        window.addEventListener('load', () => {
+            resizeCanvases();
+            resizeGraphs();
+        });
+    </script>
+</body>
+
+</html>
